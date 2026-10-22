@@ -6,7 +6,7 @@ Experiencia web de marca construida con Three.js y MindAR Image Tracking. Conser
 
 La imagen que se detecta es `assets/marker/target.jpg` (imagen de RUFIÁN MAGAZINE entregada para este proyecto). Para evitar usar por error el archivo `.mind` que venía del marcador de otra marca, la aplicación compila el target en el navegador al pulsar **Activar experiencia AR**. El archivo compilado queda temporalmente en memoria durante esa sesión, por lo que no hay que generar ni reemplazar manualmente `targets.mind`.
 
-La compilación inicial puede tardar un poco más que una experiencia con target precompilado y requiere conexión a internet para cargar MindAR desde jsDelivr. Para mejorar el reconocimiento, imprime o muestra la imagen completa, plana, nítida, con buena iluminación y sin reflejos; evita que el logotipo o los detalles queden tapados.
+La compilación inicial puede tardar un poco más que una experiencia con target precompilado y requiere conexión a internet para cargar MindAR como módulo ES. El proyecto intenta jsDelivr y, si falla, usa un CDN alternativo (unpkg). Para mejorar el reconocimiento, imprime o muestra la imagen completa, plana, nítida, con buena iluminación y sin reflejos; evita que el logotipo o los detalles queden tapados.
 
 ## Probar localmente
 
@@ -41,6 +41,6 @@ No abras directamente `index.html` como archivo (`file://`), porque los módulos
 ## Requisitos y observaciones
 
 - La cámara requiere HTTPS o `localhost`, permiso explícito y un navegador compatible con WebRTC/WebGL.
-- Los módulos de MindAR y las fuentes visuales se cargan de servicios externos; la primera carga requiere internet.
+- Los módulos de MindAR y las fuentes visuales se cargan de servicios externos; la primera carga requiere internet. El compilador se importa como módulo ES (MindAR 1.2.5), no como script clásico global.
 - El audio de la escena se ha apuntado al archivo local `assets/bubbles.mp3`.
 - Se conserva `app.json` para no descartar la escena Three.js del proyecto original.

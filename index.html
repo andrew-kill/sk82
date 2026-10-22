@@ -7,8 +7,7 @@
   <meta name="description" content="Rufián — skate underground. Explora la tabla mediante una experiencia de realidad aumentada.">
   <title>RUFIÁN — Skate Underground</title>
   <link rel="stylesheet" href="css/app.css">
-  <!-- MindAR Image Compiler: compila el marcador de Rufián en el navegador. -->
-  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image.prod.js"></script>
+  <!-- MindAR 1.2.5 usa módulos ES; el compilador se importa dinámicamente desde el módulo correcto. -->
   <script type="importmap">
   {
     "imports": {
@@ -153,6 +152,29 @@
       return loadPromise;
     }
 
+    // MindAR 1.2.x se distribuye como ES module: cargarlo con una etiqueta script clásica
+    // no crea window.MINDAR.IMAGE. Importamos Compiler como export del módulo y probamos
+    // dos CDNs para evitar depender de un único punto de entrega.
+    async function loadMindARCompiler() {
+      const urls = [
+        'https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image.prod.js',
+        'https://unpkg.com/mind-ar@1.2.5/dist/mindar-image.prod.js'
+      ];
+      let lastError = null;
+      for (const url of urls) {
+        try {
+          const module = await import(url);
+          if (typeof module.Compiler === 'function') return module.Compiler;
+          throw new Error('El módulo descargado no exporta Compiler.');
+        } catch (error) {
+          lastError = error;
+          console.warn('No se pudo cargar MindAR Compiler desde', url, error);
+        }
+      }
+      const detail = lastError?.message ? ` Detalle: ${lastError.message}` : '';
+      throw new Error('No se pudo descargar el compilador de MindAR. Revisa tu conexión, bloqueadores de contenido o la disponibilidad de los CDN e inténtalo de nuevo.' + detail);
+    }
+
     // Genera el archivo .mind en memoria a partir de la imagen real de Rufián.
     // Esto evita reutilizar el targets.mind antiguo, que pertenecía a otra marca.
     async function getCompiledTargetUrl() {
@@ -160,10 +182,7 @@
       if (compileTargetPromise) return compileTargetPromise;
 
       compileTargetPromise = (async () => {
-        const Compiler = window.MINDAR?.IMAGE?.Compiler;
-        if (!Compiler) {
-          throw new Error('No se pudo cargar el compilador de MindAR. Comprueba tu conexión y vuelve a intentar.');
-        }
+        const Compiler = await loadMindARCompiler();
 
         setProgress(27, 'Cargando imagen de seguimiento…');
         const image = new Image();
